@@ -7,12 +7,17 @@
 # Pull base image.
 FROM anapsix/alpine-java
 
+MAINTAINER Alvaro del Castillo <acs@bitergia.com>
+
+ENV ELASTIC_DOWNLOAD_URL https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.3.1.tar.gz
+
+
 # Install ElasticSearch.
 RUN apk update &&  apk add ca-certificates wget && update-ca-certificates
 RUN \
  mkdir /tmp/es && \
  cd /tmp/es && \
- wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.1.0.tar.gz && \
+ wget ${ELASTIC_DOWNLOAD_URL} && \
  tar xvzf elasticsearch-*.tar.gz && \
  rm -f elasticsearch-*.tar.gz && \
  mv /tmp/es/elasticsearch-* /elasticsearch && \
@@ -23,9 +28,6 @@ VOLUME ["/data"]
 
 # Mount elasticsearch.yml config
 COPY elasticsearch.yml /elasticsearch/config/
-# COPY readonlyrest.yml /elasticsearch/config/
-# COPY readonlyrest-1.16.14_es6.1.0.zip /tmp/
-# RUN /elasticsearch/bin/elasticsearch-plugin install file:/tmp/readonlyrest-1.16.14_es6.1.0.zip
 
 # Change log level INFO->DEBUG
 
