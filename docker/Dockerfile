@@ -10,6 +10,7 @@ FROM anapsix/alpine-java
 MAINTAINER Alvaro del Castillo <acs@bitergia.com>
 
 ENV ELASTIC_DOWNLOAD_URL https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.3.1.tar.gz
+ENV ES_TMPDIR tmp
 
 
 # Install ElasticSearch.
