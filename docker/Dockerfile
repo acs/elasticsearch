@@ -14,7 +14,7 @@ ENV ES_TMPDIR tmp
 
 
 # Install ElasticSearch.
-RUN apk update &&  apk add ca-certificates wget && update-ca-certificates && update-ca-certificates
+RUN apk update &&  apk add ca-certificates wget curl && update-ca-certificates && update-ca-certificates
 RUN \
  mkdir /tmp/es && \
  cd /tmp/es && \
