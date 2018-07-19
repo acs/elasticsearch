@@ -13,7 +13,7 @@ ENV ELASTIC_DOWNLOAD_URL https://artifacts.elastic.co/downloads/elasticsearch/el
 
 
 # Install ElasticSearch.
-RUN apk update &&  apk add ca-certificates wget && update-ca-certificates
+RUN apk update &&  apk add ca-certificates wget && update-ca-certificates && update-ca-certificates
 RUN \
  mkdir /tmp/es && \
  cd /tmp/es && \
@@ -28,6 +28,20 @@ VOLUME ["/data"]
 
 # Mount elasticsearch.yml config
 COPY elasticsearch.yml /elasticsearch/config/
+
+# Install Search-Guard plugin
+RUN /elasticsearch/bin/elasticsearch-plugin install -b com.floragunn:search-guard-6:6.3.1-22.3 && \
+    cd /elasticsearch/plugins/search-guard-6/tools/ && \
+    rm install_demo_configuration.sh && \
+    wget https://raw.githubusercontent.com/floragunncom/search-guard/master/tools/install_demo_configuration.sh && \
+    chmod 755 install_demo_configuration.sh && \
+    # This is for the elastic container 6.1.0 which grep does not support --quiet
+    sed -i 's/\-\-quiet/\-q/' /elasticsearch/plugins/search-guard-6/tools/install_demo_configuration.sh && \
+    ./install_demo_configuration.sh -y && \
+    echo "searchguard.enterprise_modules_enabled: false" >> \
+    /elasticsearch/config/elasticsearch.yml
+# Add default roles
+ADD sg_roles_mapping.yml /usr/share/elasticsearch/plugins/search-guard-6/sgconfig/sg_roles_mapping.yml
 
 # Change log level INFO->DEBUG
 
@@ -45,9 +59,13 @@ USER esuser
 
 # Remote debugger
 ENV ES_JAVA_OPTS "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+ENV PATH /elasticsearch/bin:$PATH
+
 
 # Define default command.
-CMD /elasticsearch/bin/elasticsearch
+# CMD /elasticsearch/bin/elasticsearch
+COPY ./docker-entrypoint.sh /
+
 
 # Expose ports.
 #   - 8000: Debug
@@ -56,3 +74,6 @@ CMD /elasticsearch/bin/elasticsearch
 EXPOSE 9200
 EXPOSE 8000
 #EXPOSE 9300
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["elasticsearch"]
+
